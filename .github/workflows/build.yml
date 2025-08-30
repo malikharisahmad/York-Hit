@@ -4,46 +4,52 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:   # manual trigger option
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
-      - name: Decode Keystore
+      - name: Install dependencies
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mykey.keystore
+          sudo apt update
+          sudo apt install -y python3 python3-pip python3-setuptools python3-wheel git unzip zip openjdk-17-jdk
+          pip3 install buildozer cython
 
-      - name: Build APK with Buildozer
+      - name: Build unsigned release APK
         run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/app \
-            -v $HOME/.buildozer:/root/.buildozer \
-            kivy/buildozer \
-            buildozer android release
+          buildozer -v android release
 
       - name: Sign APK
         run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > mykey.keystore
+          UNSIGNED_APK=$(ls bin/*-release-unsigned.apk | head -n 1)
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-            -keystore mykey.keystore -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
-            -keypass "${{ secrets.KEY_PASSWORD }}" \
-            bin/*-release-unsigned.apk "${{ secrets.KEY_ALIAS }}"
+            -keystore mykey.keystore \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            "$UNSIGNED_APK" "$KEY_ALIAS"
 
-      - name: Zipalign APK
+      - name: Align APK
         run: |
-          wget https://dl.google.com/android/repository/build-tools_r33.0.0-linux.zip
-          unzip -q build-tools_r33.0.0-linux.zip -d build-tools
-          build-tools/android-*/zipalign -v 4 bin/*-release-unsigned.apk bin/app-release.apk
+          UNSIGNED_APK=$(ls bin/*-release-unsigned.apk | head -n 1)
+          zipalign -v -p 4 "$UNSIGNED_APK" bin/app-release-signed.apk
 
-      - name: Upload signed APK
-        uses: actions/upload-artifact@v3
+      - name: Verify APK Signature
+        run: |
+          apksigner verify bin/app-release-signed.apk || true
+
+      - name: Upload Signed APK
+        uses: actions/upload-artifact@v4
         with:
           name: signed-apk
-          path: bin/app-release.apk
+          path: bin/app-release-signed.apk
