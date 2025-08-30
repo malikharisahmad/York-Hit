@@ -16,7 +16,7 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y unzip wget openjdk-17-jdk python3-pip git
+          sudo apt-get install -y unzip wget openjdk-17-jdk python3-pip git rsync
 
       # Install Android SDK Command Line Tools
       - name: Install Android SDK
@@ -34,7 +34,7 @@ jobs:
           echo "$HOME/android-sdk/build-tools/34.0.0" >> $GITHUB_PATH
           echo "$HOME/android-sdk/build-tools/33.0.2" >> $GITHUB_PATH
 
-      # Install SDK packages (Android 34 + 33)
+      # Install SDK packages (Android 34 + 33) and symlink for Buildozer
       - name: Install SDK packages
         run: |
           yes | sdkmanager --sdk_root=$HOME/android-sdk \
@@ -48,6 +48,10 @@ jobs:
           # Copy SDK into the path Buildozer expects
           mkdir -p $HOME/.buildozer/android/platform
           rsync -a $HOME/android-sdk $HOME/.buildozer/android/platform/android-sdk
+
+          # Create fake "tools/bin" so Buildozer finds sdkmanager
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
+          ln -s $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
 
       # Install buildozer
       - name: Install Buildozer
@@ -63,21 +67,4 @@ jobs:
           export PATH=$ANDROIDSDK/platform-tools:$ANDROIDSDK/build-tools/34.0.0:$ANDROIDSDK/build-tools/33.0.2:$PATH
           buildozer -v android release
 
-      # Sign the APK
-      - name: Sign APK
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mykey.keystore
-          cp bin/*-release.apk app-release-unsigned.apk
-          apksigner sign --ks mykey.keystore \
-            --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-            --key-pass pass:${{ secrets.KEY_PASSWORD }} \
-            --ks-key-alias ${{ secrets.KEY_ALIAS }} \
-            --out app-release.apk \
-            app-release-unsigned.apk
-
-      # Upload artifact
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-apk
-          path: app-release.apk
+      # Sign the A
