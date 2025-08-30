@@ -45,6 +45,10 @@ jobs:
             "build-tools;33.0.2"
           yes | sdkmanager --licenses --sdk_root=$HOME/android-sdk
 
+          # Copy SDK into the path Buildozer expects
+          mkdir -p $HOME/.buildozer/android/platform
+          rsync -a $HOME/android-sdk $HOME/.buildozer/android/platform/android-sdk
+
       # Install buildozer
       - name: Install Buildozer
         run: |
@@ -54,7 +58,7 @@ jobs:
       # Build unsigned APK (force SDK + NDK paths)
       - name: Build APK
         run: |
-          export ANDROIDSDK=$HOME/android-sdk
+          export ANDROIDSDK=$HOME/.buildozer/android/platform/android-sdk
           export ANDROIDNDK=$HOME/.buildozer/android/platform/android-ndk-r25b
           export PATH=$ANDROIDSDK/platform-tools:$ANDROIDSDK/build-tools/34.0.0:$ANDROIDSDK/build-tools/33.0.2:$PATH
           buildozer -v android release
