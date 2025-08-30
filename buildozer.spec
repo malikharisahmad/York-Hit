@@ -106,16 +106,16 @@ android.permissions = WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
 # ----- IMPORTANT: Android API / SDK / NDK configuration -----
 # (int) Target Android API (compileSdkVersion)
-android.api = 33
+android.api = 30
 
 # (int) Minimum API your APK / AAB will support.
 android.minapi = 21
 
 # (int) Android SDK version to use -- set to match android.api
-android.sdk = 33
+android.sdk = 30
 
-# (str) Android NDK version to use (python-for-android works well with r25b)
-android.ndk = 25b
+# (str) Android NDK version to use (python-for-android works well with r21e)
+android.ndk = 21e
 
 # (int) Android NDK API to use. This is the minimum API your app will support.
 android.ndk_api = 21
@@ -191,7 +191,7 @@ android.service_class_name = org.kivy.android.PythonService
 #android.enable_androidx = True
 
 # (list) add java compile options
-android.add_compile_options = "sourceCompatibility = 17", "targetCompatibility = 17"
+android.add_compile_options = "sourceCompatibility = 1.8", "targetCompatibility = 1.8"
 
 # (list) Gradle repositories to add
 # android.gradle_repositories = "maven { url 'https://kotlin.bintray.com/ktor' }"

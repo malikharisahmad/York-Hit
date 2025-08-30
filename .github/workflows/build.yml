@@ -13,14 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install dependencies
+      # Install system packages
       - name: Install system packages
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             unzip \
             wget \
-            openjdk-17-jdk \
+            openjdk-8-jdk \
             python3-pip \
             git \
             rsync \
@@ -34,11 +34,13 @@ jobs:
             libffi-dev \
             libssl-dev
 
-      # Set Java 17 as default
-      - name: Set Java 17
+      # Set Java 8 as default
+      - name: Set Java 8
         run: |
-          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+          sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8-openjdk-amd64/bin/java 1
+          sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/bin/java
+          export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
 
       # Install Android SDK Command Line Tools
       - name: Install Android SDK
@@ -59,13 +61,20 @@ jobs:
       # Install SDK packages and symlink for Buildozer
       - name: Install SDK packages
         run: |
-          yes | sdkmanager --sdk_root=$HOME/android-sdk \
+          # Use Java 8 for SDK operations initially, then switch to newer for sdkmanager
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          
+          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk \
             "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0" \
             "platforms;android-33" \
-            "build-tools;33.0.2"
-          yes | sdkmanager --licenses --sdk_root=$HOME/android-sdk
+            "build-tools;33.0.2" \
+            "platforms;android-30" \
+            "build-tools;30.0.3"
+          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$HOME/android-sdk
+
+          # Switch back to Java 8 for build
+          export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
 
           # Symlink SDK into Buildozer's expected path
           mkdir -p $HOME/.buildozer/android/platform
