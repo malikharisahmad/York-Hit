@@ -2,62 +2,40 @@ name: Build Kivy APK
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      # Install dependencies
-      - name: Install system packages
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y unzip wget openjdk-17-jdk python3-pip git
+          sudo apt-get install -y zip openjdk-17-jdk
 
-      # Install Android SDK Command Line Tools
-      - name: Install Android SDK
-        run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
-          unzip cmdtools.zip -d cmdline-tools
-          mkdir -p cmdline-tools/latest
-          mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/
-          echo "ANDROIDSDK=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
-          echo "PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$HOME/android-sdk/build-tools/34.0.0:$PATH" >> $GITHUB_ENV
-
-      # Install SDK packages
+      # 👉 Add the SDK install step HERE
       - name: Install SDK packages
         run: |
-          sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-          yes | sdkmanager --licenses --sdk_root=$HOME/android-sdk
+          yes | sdkmanager --sdk_root=$HOME/android-sdk \
+            "platform-tools" \
+            "platforms;android-33" \
+            "build-tools;33.0.2"
 
-      # Install buildozer
+          echo "export ANDROIDSDK=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "export PATH=$HOME/android-sdk/platform-tools:$HOME/android-sdk/build-tools/33.0.2:$PATH" >> $GITHUB_ENV
+
       - name: Install Buildozer
         run: |
-          pip install --upgrade pip
           pip install buildozer cython
 
-      # Build unsigned APK
-      - name: Build APK
+      - name: Build release APK
         run: |
-          buildozer android release
-
-      # Sign the APK
-      - name: Sign APK
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mykey.keystore
-          cp bin/*-release.apk app-release-unsigned.apk
-          $HOME/android-sdk/build-tools/34.0.0/apksigner sign --ks mykey.keystore --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.KEY_PASSWORD }} --ks-key-alias ${{ secrets.KEY_ALIAS }} --out app-release.apk app-release-unsigned.apk
-
-      # Upload artifact
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-apk
-          path: app-release.apk
+          buildozer -v android release
