@@ -90,8 +90,11 @@ jobs:
           export ANDROIDNDK=$HOME/.buildozer/android/platform/android-ndk-r25b
           export PATH=$ANDROIDSDK/platform-tools:$ANDROIDSDK/build-tools/34.0.0:$ANDROIDSDK/build-tools/33.0.2:$PATH
           
-          # Generate keystore automatically
+          # Clean and create keystore directory
+          rm -rf keystore
           mkdir -p keystore
+          
+          # Generate keystore automatically
           keytool -genkey -v -keystore keystore/mykey.keystore -alias myalias -keyalg RSA -keysize 2048 -validity 10000 -storepass malikharisahmad -keypass malikharisahmad -dname "CN=York Hit, OU=Cricket, O=YorkHit, L=Lahore, S=Punjab, C=PK"
           
           # Build release APK
