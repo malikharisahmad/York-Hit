@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,matplotlib,sqlite3
+requirements = python3,kivy,matplotlib,sqlite3,pillow,numpy,setuptools
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -56,13 +56,12 @@ orientation = portrait
 # (list) List of service to declare
 #services = NAME:ENTRYPOINT_TO_PY,NAME2:ENTRYPOINT2_TO_PY
 
-# ----- Signing (DEVELOPMENT/LOCAL) -----
-# If you want buildozer to sign the APK itself, uncomment & set these.
-# For CI (GitHub Actions) it's safer to sign with secrets and apksigner in workflow.
-# android.release_keystore = keystore/mykey.keystore
-# android.keystore_pass = malikharisahmad
-# android.keyalias_name = myalias
-# android.keyalias_pass = malikharisahmad
+# ----- Signing (AUTO-GENERATED IN CI) -----
+# Keystore will be generated automatically in GitHub Actions
+android.release_keystore = keystore/mykey.keystore
+android.keystore_pass = malikharisahmad
+android.keyalias_name = myalias
+android.keyalias_pass = malikharisahmad
 
 #
 # OSX Specific
@@ -74,8 +73,7 @@ orientation = portrait
 # change the major version of python used by the app
 osx.python_version = 3
 
-# Kivy version to use (leave default or pin if you need)
-osx.kivy_version = 1.9.1
+# Kivy version to use - removed outdated version
 
 #
 # Android specific
@@ -101,7 +99,7 @@ fullscreen = 0
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io for options)
-android.permissions =
+android.permissions = WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
@@ -193,7 +191,7 @@ android.service_class_name = org.kivy.android.PythonService
 #android.enable_androidx = True
 
 # (list) add java compile options
-# android.add_compile_options = "sourceCompatibility = 1.8", "targetCompatibility = 1.8"
+android.add_compile_options = "sourceCompatibility = 17", "targetCompatibility = 17"
 
 # (list) Gradle repositories to add
 # android.gradle_repositories = "maven { url 'https://kotlin.bintray.com/ktor' }"
@@ -249,8 +247,8 @@ android.logcat_pid_only = False
 # (bool) Copy library instead of making a libpymodules.so
 android.copy_libs = 1
 
-# (list) The Android archs to build for
-android.archs = arm64-v8a, armeabi-v7a
+# (list) The Android archs to build for - Single arch for faster builds
+android.archs = arm64-v8a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # android.numeric_version = 1
@@ -314,7 +312,6 @@ p4a.bootstrap = sdl2
 #
 # iOS specific
 #
-# ios.* settings left as in original file (no change)
 ios.kivy_ios_url = https://github.com/kivy/kivy-ios
 ios.kivy_ios_branch = master
 ios.ios_deploy_url = https://github.com/phonegap/ios-deploy
@@ -334,8 +331,3 @@ warn_on_root = 1
 
 # (str) Path to build output (i.e. .apk, .aab, .ipa) storage
 # bin_dir = ./bin
-
-# (list) Profiles examples (kept for completeness, unchanged)
-# use buildozer --profile demo android debug to use profile
-#[app@demo]
-#title = My Application (demo)
