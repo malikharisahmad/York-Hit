@@ -22,11 +22,26 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3 python3-pip python3-setuptools python3-wheel git unzip zip openjdk-17-jdk zipalign apksigner
+          sudo apt install -y python3 python3-pip python3-setuptools python3-wheel unzip zip git wget
           pip3 install buildozer cython
+
+      - name: Install Android SDK + Build Tools
+        run: |
+          mkdir -p $HOME/android-sdk
+          cd $HOME/android-sdk
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+          unzip cmdtools.zip -d cmdline-tools
+          mkdir -p cmdline-tools/latest
+          mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/34.0.0:$PATH
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Build unsigned release APK
         run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/build-tools/34.0.0:$PATH
           buildozer -v android release
 
       - name: Sign APK
@@ -41,11 +56,15 @@ jobs:
 
       - name: Align APK
         run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/build-tools/34.0.0:$PATH
           UNSIGNED_APK=$(ls bin/*-release-unsigned.apk | head -n 1)
           zipalign -v -p 4 "$UNSIGNED_APK" bin/app-release-signed.apk
 
       - name: Verify APK Signature
         run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_SDK_ROOT/build-tools/34.0.0:$PATH
           apksigner verify bin/app-release-signed.apk || true
 
       - name: Upload Signed APK
