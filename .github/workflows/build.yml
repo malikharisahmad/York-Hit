@@ -14,12 +14,12 @@ jobs:
 
       # Install dependencies
             - name: Install system packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            unzip wget openjdk-17-jdk python3-pip git rsync \
-            autoconf automake libtool pkg-config \
-            build-essential cmake zlib1g-dev libffi-dev libssl-dev
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y \
+                unzip wget openjdk-17-jdk python3-pip git rsync \
+                autoconf automake libtool pkg-config \
+                build-essential cmake zlib1g-dev libffi-dev libssl-dev
 
       # Install Android SDK Command Line Tools
       - name: Install Android SDK
