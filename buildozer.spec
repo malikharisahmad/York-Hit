@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,matplotlib,sqlite3,pillow,numpy,setuptools
+requirements = python3,kivy
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -56,12 +56,12 @@ orientation = portrait
 # (list) List of service to declare
 #services = NAME:ENTRYPOINT_TO_PY,NAME2:ENTRYPOINT2_TO_PY
 
-# ----- Signing (AUTO-GENERATED IN CI) -----
-# Keystore will be generated automatically in GitHub Actions
-android.release_keystore = keystore/mykey.keystore
-android.keystore_pass = malikharisahmad
-android.keyalias_name = myalias
-android.keyalias_pass = malikharisahmad
+# ----- Signing (DISABLED FOR DEBUG) -----
+# Comment out for debug builds
+# android.release_keystore = keystore/mykey.keystore
+# android.keystore_pass = malikharisahmad
+# android.keyalias_name = myalias
+# android.keyalias_pass = malikharisahmad
 
 #
 # OSX Specific

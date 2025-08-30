@@ -81,7 +81,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install buildozer cython
-          pip install kivy matplotlib pillow requests numpy setuptools
 
       # Generate keystore and build release APK
       - name: Generate keystore and build release APK
@@ -100,11 +99,11 @@ jobs:
           # Build release APK
           buildozer -v android release
 
-      # Upload signed APK as artifact
+      # Upload APK as artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: york-hit-release-apk
+          name: york-hit-debug-apk
           path: bin/*.apk
           retention-days: 30
