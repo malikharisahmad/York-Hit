@@ -16,7 +16,7 @@ jobs:
       - name: Install system packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y unzip wget openjdk-17-jdk python3-pip git rsync
+          sudo apt-get install -y unzip wget openjdk-17-jdk python3-pip git
 
       # Install Android SDK Command Line Tools
       - name: Install Android SDK
@@ -45,13 +45,14 @@ jobs:
             "build-tools;33.0.2"
           yes | sdkmanager --licenses --sdk_root=$HOME/android-sdk
 
-          # Copy SDK into the path Buildozer expects
+          # Symlink SDK into Buildozer’s expected path
           mkdir -p $HOME/.buildozer/android/platform
-          rsync -a $HOME/android-sdk $HOME/.buildozer/android/platform/android-sdk
+          rm -rf $HOME/.buildozer/android/platform/android-sdk
+          ln -s $HOME/android-sdk $HOME/.buildozer/android/platform/android-sdk
 
           # Create fake "tools/bin" so Buildozer finds sdkmanager
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
-          ln -s $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          ln -sf $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
 
       # Install buildozer
       - name: Install Buildozer
@@ -66,5 +67,3 @@ jobs:
           export ANDROIDNDK=$HOME/.buildozer/android/platform/android-ndk-r25b
           export PATH=$ANDROIDSDK/platform-tools:$ANDROIDSDK/build-tools/34.0.0:$ANDROIDSDK/build-tools/33.0.2:$PATH
           buildozer -v android release
-
-      # Sign the A
