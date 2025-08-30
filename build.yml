@@ -1,0 +1,49 @@
+name: Build Signed Kivy APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:   # manual trigger option
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mykey.keystore
+
+      - name: Build APK with Buildozer
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/app \
+            -v $HOME/.buildozer:/root/.buildozer \
+            kivy/buildozer \
+            buildozer android release
+
+      - name: Sign APK
+        run: |
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore mykey.keystore -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
+            -keypass "${{ secrets.KEY_PASSWORD }}" \
+            bin/*-release-unsigned.apk "${{ secrets.KEY_ALIAS }}"
+
+      - name: Zipalign APK
+        run: |
+          wget https://dl.google.com/android/repository/build-tools_r33.0.0-linux.zip
+          unzip -q build-tools_r33.0.0-linux.zip -d build-tools
+          build-tools/android-*/zipalign -v 4 bin/*-release-unsigned.apk bin/app-release.apk
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: signed-apk
+          path: bin/app-release.apk
