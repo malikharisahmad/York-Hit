@@ -94,7 +94,7 @@ jobs:
 
       # Upload APK as artifact
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: york-hit-debug-apk
