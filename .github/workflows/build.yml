@@ -19,7 +19,7 @@ jobs:
           sudo apt-get install -y \
             unzip \
             wget \
-            openjdk-17-jdk \
+            openjdk-11-jdk \
             python3-pip \
             git \
             rsync \
@@ -33,6 +33,13 @@ jobs:
             libffi-dev \
             libssl-dev
 
+      # Set Java 11 as default
+      - name: Set Java 11
+        run: |
+          sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk-amd64/bin/java 1
+          sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
+          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+          echo "JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> $GITHUB_ENV
 
       # Install Android SDK Command Line Tools
       - name: Install Android SDK
@@ -61,7 +68,7 @@ jobs:
             "build-tools;33.0.2"
           yes | sdkmanager --licenses --sdk_root=$HOME/android-sdk
 
-          # Symlink SDK into Buildozer’s expected path
+          # Symlink SDK into Buildozer's expected path
           mkdir -p $HOME/.buildozer/android/platform
           rm -rf $HOME/.buildozer/android/platform/android-sdk
           ln -s $HOME/android-sdk $HOME/.buildozer/android/platform/android-sdk
@@ -70,16 +77,25 @@ jobs:
           mkdir -p $HOME/.buildozer/android/platform/android-sdk/tools/bin
           ln -sf $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
 
-      # Install buildozer
-      - name: Install Buildozer
+      # Install buildozer and dependencies
+      - name: Install Buildozer and Python dependencies
         run: |
           pip install --upgrade pip
           pip install buildozer cython
+          pip install kivy matplotlib pillow requests
 
-      # Build unsigned APK (force SDK + NDK paths)
+      # Build debug APK (force SDK + NDK paths)
       - name: Build APK
         run: |
           export ANDROIDSDK=$HOME/.buildozer/android/platform/android-sdk
           export ANDROIDNDK=$HOME/.buildozer/android/platform/android-ndk-r25b
           export PATH=$ANDROIDSDK/platform-tools:$ANDROIDSDK/build-tools/34.0.0:$ANDROIDSDK/build-tools/33.0.2:$PATH
-          buildozer -v android release
+          buildozer -v android debug
+
+      # Upload APK as artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: york-hit-debug-apk
+          path: bin/*.apk
