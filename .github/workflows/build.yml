@@ -12,13 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install dependencies
+      # Install dependencies  
       - name: Install system packages
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             unzip \
             wget \
+            openjdk-17-jdk \
             openjdk-11-jdk \
             python3-pip \
             git \
@@ -33,13 +34,11 @@ jobs:
             libffi-dev \
             libssl-dev
 
-      # Set Java 11 as default
-      - name: Set Java 11
+      # Set Java 17 as default for SDK tools
+      - name: Set Java 17 for SDK
         run: |
-          sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk-amd64/bin/java 1
-          sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
-          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-          echo "JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> $GITHUB_ENV
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
 
       # Install Android SDK Command Line Tools
       - name: Install Android SDK
