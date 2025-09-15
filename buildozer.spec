@@ -1,5 +1,4 @@
 [app]
-
 # (str) Title of your application
 title = York Hit
 
@@ -12,14 +11,16 @@ package.domain = com.yorkhit
 # (str) Source code where the main.py live
 source.dir = .
 
-# (list) Source files to include (let empty to include all the files)
+# (list) Source files to include (leave empty to include all files)
 source.include_exts = py,png,jpg,kv,atlas
 
 # (str) Application versioning (method 1)
 version = 0.1
 
-# (list) Application requirements - FIXED: Added matplotlib and numpy
-requirements = python3,kivy,matplotlib,numpy
+# (list) Application requirements
+# ⚠️ matplotlib is very heavy — builds often fail.
+# First test WITHOUT it. If it succeeds, then add back matplotlib.
+requirements = python3,kivy,numpy
 
 # (str) Presplash of the application
 #presplash.filename = %(source.dir)s/data/presplash.png
@@ -36,60 +37,29 @@ fullscreen = 0
 # (list) Permissions
 android.permissions = WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
-# ----- FIXED: Consistent Android API configuration -----
-# (int) Target Android API (compileSdkVersion)
-android.api = 33
+# ----- ANDROID API CONFIGURATION -----
+android.api = 33        # Target Android API
+android.minapi = 21     # Minimum supported API
 
-# (int) Minimum API your APK / AAB will support.
-android.minapi = 21
-
-# (int) Android SDK version to use
-android.sdk = 33
-
-# (str) Android NDK version to use
+# ⚠️ Removed `android.sdk = 33` → Buildozer manages SDK, no need to force
+# ⚠️ Keep NDK fixed (p4a stable with 25b)
 android.ndk = 25b
-
-# (int) Android NDK API to use
 android.ndk_api = 21
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
 android.private_storage = True
 
-# (bool) If True, then skip trying to update the Android sdk
-android.skip_update = False
-
-# (bool) If True, then automatically accept SDK license agreements.
+# (bool) Automatically accept SDK license agreements
 android.accept_sdk_license = True
 
-# (str) Android entry point, default is ok for Kivy-based app
+# (str) Android entry point
 android.entrypoint = org.kivy.android.PythonActivity
-
-# (str) Full name including package path of the Java class that implements Android Activity
-android.activity_class_name = org.kivy.android.PythonActivity
-
-# (str) Full name including package path of the Java class that implements Python Service
-android.service_class_name = org.kivy.android.PythonService
-
-# (list) add java compile options
-android.add_compile_options = "sourceCompatibility = 1.8", "targetCompatibility = 1.8"
-
-# (str) Android logcat filters to use - ADDED: More verbose logging for debugging
-android.logcat_filters = *:D
-
-# (bool) Android logcat only display log for activity's pid
-android.logcat_pid_only = False
-
-# (bool) Copy library instead of making a libpymodules.so
-android.copy_libs = 1
 
 # (list) The Android archs to build for
 android.archs = arm64-v8a
 
-# (bool) enables Android auto backup feature (Android API >=23)
+# (bool) Enables Android auto backup feature
 android.allow_backup = True
-
-# (bool) Skip byte compile for .py files
-android.no-byte-compile-python = False
 
 # (str) The format used to package the app for release mode
 android.release_artifact = apk
@@ -97,21 +67,18 @@ android.release_artifact = apk
 # (str) The format used to package the app for debug mode
 android.debug_artifact = apk
 
-# ----- ENABLED: Signing for release builds -----
-android.release_keystore = keystore/mykey.keystore
-android.keystore_pass = malikharisahmad
-android.keyalias_name = myalias
-android.keyalias_pass = malikharisahmad
-
-#
-# Python for android (p4a) specific
-#
+# ----- SIGNING CONFIG -----
+# ⚠️ If this file doesn't exist, the build will fail.
+# Comment this section out until you're ready for release.
+# android.release_keystore = keystore/mykey.keystore
+# android.keystore_pass = malikharisahmad
+# android.keyalias_name = myalias
+# android.keyalias_pass = malikharisahmad
 
 # (str) Bootstrap to use for android builds
 p4a.bootstrap = sdl2
 
 [buildozer]
-
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
 log_level = 2
 
